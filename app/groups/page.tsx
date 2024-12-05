@@ -1,6 +1,6 @@
 import CreateGroupModal from './components/CreateGroupModal';
 
-export default function Groups() {
+export default async function Groups() {
   return (
     <div>
       <p>Groups</p>
