@@ -6,7 +6,11 @@ import { Button } from '@/components/ui/button';
 import { auth } from '@/firebaseConfig';
 import { useAuthState } from 'react-firebase-hooks/auth';
 
-export default function Navbar() {
+type ClientNavbarProps = {
+  validToken?: boolean;
+};
+
+export default function ClientNavbar({ validToken }: ClientNavbarProps) {
   const router = useRouter();
 
   const [user] = useAuthState(auth);
@@ -14,6 +18,10 @@ export default function Navbar() {
   async function handleSignOut() {
     try {
       await auth.signOut();
+
+      await fetch('/api/logout');
+
+      router.push('/');
     } catch (error) {
       console.error('An error occurred during sign out:', error);
     }
