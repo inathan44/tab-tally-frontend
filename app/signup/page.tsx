@@ -15,18 +15,14 @@ import { useForm } from 'react-hook-form';
 import { signUpSchema, SignUpSchema } from '@/app/schemas/signup';
 import { Icons } from '@/components/ui/icons';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { getAuth } from 'firebase/auth';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import firebaseApp from '@/firebaseConfig';
 import { createUserInDbAndFirebase } from '../api/users';
-
-const auth = getAuth(firebaseApp);
+import { useRouter } from 'next/navigation';
 
 export default function Signup() {
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  const [user, loading, error] = useAuthState(auth);
 
   const form = useForm<SignUpSchema>({
     resolver: zodResolver(signUpSchema),
@@ -46,7 +42,16 @@ export default function Signup() {
 
     try {
       const { firebaseUser } = await createUserInDbAndFirebase(values);
-      console.log('User created:', firebaseUser);
+
+      const idToken = await firebaseUser.getIdToken();
+
+      await fetch('/api/login', {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      });
+
+      router.push('/');
     } catch (error) {
       console.error('An error occurred during sign up:', error);
       form.setError('root', {
