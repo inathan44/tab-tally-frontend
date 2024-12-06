@@ -11,6 +11,7 @@
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-avatar": "^1.1.1",
+    "@radix-ui/react-checkbox": "^1.1.2",
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-label": "^2.1.0",
     "@radix-ui/react-popover": "^1.1.2",
@@ -22,6 +23,8 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
     "firebase-admin": "^13.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "lodash.debounce": "^4.0.8",
     "lucide-react": "^0.464.0",
     "next": "15.0.3",
     "next-firebase-auth-edge": "^1.8.2",
@@ -34,6 +37,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/lodash.debounce": "^4.0.9",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
