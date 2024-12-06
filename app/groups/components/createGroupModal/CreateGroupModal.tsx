@@ -8,8 +8,8 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
-import ModalHeader from './createGroupModal/ModalHeader';
-import MemberInvite from './createGroupModal/MemberInvite';
+import ModalHeader from './ModalHeader';
+import MemberInvite from './MemberInvite';
 import {
   Form,
   FormControl,
@@ -25,23 +25,21 @@ import {
   CreateGroupSchema,
 } from '@/app/schemas/createGroup';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Icons } from '@/components/ui/icons';
-import { useState } from 'react';
+
+import MemberSearch from '@/app/groups/components/createGroupModal/MemberSearch';
 
 export default function CreateGroupModal() {
-  const [memberSearch, setMemberSearch] = useState('');
-
   const form = useForm<CreateGroupSchema>({
     resolver: zodResolver(createGroupSchema),
     defaultValues: {
       name: '',
       description: '',
+      invitedMembers: [],
     },
   });
 
   async function onSubmit(values: CreateGroupSchema) {
-    console.log(values);
+    alert('Group created' + values);
   }
 
   return (
@@ -51,7 +49,7 @@ export default function CreateGroupModal() {
       </DialogTrigger>
       <DialogContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
             <ModalHeader />
             <FormField
               control={form.control}
@@ -67,19 +65,9 @@ export default function CreateGroupModal() {
               )}
             />
             <Separator />
-            <Label className='font-bold'>Members</Label>
-            <div className='flex items-center w-full gap-2'>
-              <div className='relative w-full'>
-                <Icons.search className='absolute top-1/2 left-2 transform -translate-y-1/2 text-muted-foreground w-4 h-4' />
-                <Input
-                  className='pl-8'
-                  placeholder='Add members by username or email'
-                  value={memberSearch}
-                  onChange={(e) => setMemberSearch(e.target.value)}
-                />
-              </div>
-              <Icons.spinner className='text-muted-foreground w-4 h-4 animate-spin' />
-            </div>
+
+            <MemberSearch form={form} />
+
             <MemberInvite />
             <Separator />
             <DialogFooter>
