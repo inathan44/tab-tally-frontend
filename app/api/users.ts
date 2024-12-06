@@ -6,15 +6,13 @@ import {
 } from 'firebase/auth';
 import firebaseApp from '@/firebaseConfig';
 import axios, { AxiosError } from 'axios';
+import { UpdateUserBody } from '@/types/api';
+import {
+  searchUsersResponse,
+  SearchUsersResponse,
+} from '../schemas/responses/searchUsers';
 
 const auth = getAuth(firebaseApp);
-
-type UpdateUserBody = {
-  email?: string;
-  username?: string;
-  firstName?: string;
-  lastName?: string;
-};
 
 async function createUserInDb(body: UpdateUserBody, token: string) {
   return await axios.post('http://localhost:5217/api/v1/Users/create', body, {
@@ -59,7 +57,7 @@ export async function createUserInDbAndFirebase(body: SignUpSchema) {
     updatedCreatedUserStatus = response.status;
   } catch (error) {
     const axiosError = error as AxiosError;
-    console.log('error message', error);
+    console.error('error message', error);
     console.error('error creating user', axiosError.response?.data);
     // Delete the user in firebase if there is an error
     await deleteUserFromDbAndFirebase(
@@ -93,4 +91,34 @@ export async function deleteUserFromDbAndFirebase(
       },
     }
   );
+}
+
+export async function searchUsers({
+  queryKey,
+}: {
+  queryKey: [string, string, string];
+}) {
+  const [_, query, token] = queryKey;
+  if (!query) {
+    return [];
+  }
+
+  try {
+    const response = await axios.get<SearchUsersResponse>(
+      `http://localhost:5217/api/v1/Users/search`,
+      {
+        params: {
+          query: query,
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const searchedUsers = searchUsersResponse.parse(response.data);
+    return searchedUsers;
+  } catch (error) {
+    console.error('Error searching users:', error);
+  }
 }
