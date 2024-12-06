@@ -54,6 +54,7 @@ function LoginForm() {
       });
 
       router.push(redirect);
+      router.refresh();
     } catch (error) {
       console.error('An error occurred during sign up:', error);
       form.setError('root', {

@@ -38,7 +38,6 @@ export default function Signup() {
 
   async function onSubmit(values: SignUpSchema) {
     setIsLoading(true);
-    console.log(values);
 
     try {
       const { firebaseUser } = await createUserInDbAndFirebase(values);
@@ -52,6 +51,7 @@ export default function Signup() {
       });
 
       router.push('/');
+      router.refresh();
     } catch (error) {
       console.error('An error occurred during sign up:', error);
       form.setError('root', {
