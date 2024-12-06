@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { authMiddleware, redirectToLogin } from 'next-firebase-auth-edge';
 import { clientConfig, serverConfig } from '@/firebaseConfig';
 
-const PUBLIC_PATHS = ['/signup', '/login', '/'];
+const PUBLIC_PATHS = ['/signup', '/login'];
 
 export async function middleware(request: NextRequest) {
   return authMiddleware(request, {
@@ -14,6 +14,7 @@ export async function middleware(request: NextRequest) {
     cookieSerializeOptions: serverConfig.cookieSerializeOptions,
     serviceAccount: serverConfig.serviceAccount,
     handleValidToken: async (_, headers) => {
+      console.info('User is authenticated');
       if (PUBLIC_PATHS.includes(request.nextUrl.pathname)) {
         const url = request.nextUrl.clone();
         url.pathname = '/groups';
