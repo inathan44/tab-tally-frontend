@@ -20,3 +20,21 @@ export const verifyToken = async (): Promise<boolean> => {
     return false;
   }
 };
+
+export const getServerToken = async (): Promise<string | null> => {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(process.env.AUTH_COOKIE_NAME!)?.value;
+
+    if (!token) {
+      return null;
+    }
+
+    const { id_token } = jwt.verify(token, SECRET_KEY) as { id_token: string };
+
+    return id_token;
+  } catch (error) {
+    console.error('Error getting server token:', error);
+    return null;
+  }
+};
