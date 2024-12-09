@@ -7,62 +7,99 @@ import {
 } from '@/components/ui/popover';
 import {
   Command,
-  CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
 import { ChevronDown } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
+import { InvitedMember } from '@/app/schemas/createGroup';
+import { titleCase } from '@/app/hooks/helpers';
+import { CreateGroupForm } from '@/types/forms';
 
-export default function MemberInvite() {
+type MemberInviteProps = {
+  invitedUser: InvitedMember;
+  form: CreateGroupForm;
+};
+
+export default function MemberInvite({ invitedUser, form }: MemberInviteProps) {
+  const [open, setOpen] = useState(false);
+
+  const fullName = titleCase(
+    invitedUser.firstName + ' ' + invitedUser.lastName
+  );
+
+  function handleRoleClick(role: 'member' | 'admin') {
+    setOpen(false);
+    form.setValue('invitedMembers', [
+      ...(form.getValues('invitedMembers') || []).map((member) => {
+        if (member.id === invitedUser.id) {
+          return {
+            ...member,
+            role: role as 'admin' | 'member',
+          };
+        }
+        return member;
+      }),
+    ]);
+  }
+
   return (
     <div className='flex items-center justify-between space-x-4'>
       <div className='flex items-center space-x-4'>
-        <Avatar className='h-8 w-8'>
+        <Avatar className='h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center'>
           <AvatarImage src='/avatars/01.png' alt='Image' />
-          <AvatarFallback>OM</AvatarFallback>
+          <AvatarFallback>
+            {`${invitedUser.firstName[0]}${invitedUser.lastName[0]}`}
+          </AvatarFallback>
         </Avatar>
         <div>
-          <p className='text-sm font-medium leading-none'>Sofia Davis</p>
-          <p className='text-sm text-muted-foreground'>m@example.com</p>
+          <p className='text-sm font-medium leading-none'>{fullName}</p>
+          <p className='text-sm text-muted-foreground'>
+            {invitedUser.username}
+          </p>
         </div>
       </div>
-      <Popover>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant='outline' size='sm' className='ml-auto'>
-            Owner <ChevronDown className='text-muted-foreground' />
+          <Button
+            variant='outline'
+            role='combobox'
+            aria-expanded={open}
+            className='justify-between'
+          >
+            {titleCase(invitedUser.role)}{' '}
+            <ChevronDown className='text-muted-foreground' />
           </Button>
         </PopoverTrigger>
         <PopoverContent className='p-0' align='end'>
           <Command>
-            <CommandInput placeholder='Select new role...' />
             <CommandList>
-              <CommandEmpty>No roles found.</CommandEmpty>
               <CommandGroup>
-                <CommandItem className='teamaspace-y-1 flex flex-col items-start px-4 py-2'>
-                  <p>Viewer</p>
+                <CommandItem
+                  className='space-y-1 flex flex-col items-start px-4 py-2'
+                  value='member'
+                  onSelect={(role) =>
+                    handleRoleClick(role as 'member' | 'admin')
+                  }
+                >
+                  <p>Member</p>
                   <p className='text-sm text-muted-foreground'>
-                    Can view and comment.
+                    Can add transactions. Can only delete their own
+                    transactions.
                   </p>
                 </CommandItem>
-                <CommandItem className='teamaspace-y-1 flex flex-col items-start px-4 py-2'>
-                  <p>Developer</p>
+                <CommandItem
+                  className='space-y-1 flex flex-col items-start px-4 py-2'
+                  value='admin'
+                  onSelect={(role) =>
+                    handleRoleClick(role as 'member' | 'admin')
+                  }
+                >
+                  <p>Admin</p>
                   <p className='text-sm text-muted-foreground'>
-                    Can view, comment and edit.
-                  </p>
-                </CommandItem>
-                <CommandItem className='teamaspace-y-1 flex flex-col items-start px-4 py-2'>
-                  <p>Billing</p>
-                  <p className='text-sm text-muted-foreground'>
-                    Can view, comment and manage billing.
-                  </p>
-                </CommandItem>
-                <CommandItem className='teamaspace-y-1 flex flex-col items-start px-4 py-2'>
-                  <p>Owner</p>
-                  <p className='text-sm text-muted-foreground'>
-                    Admin-level access to all resources.
+                    Member privileges. Can add members, promote members, delete
+                    any transaction.
                   </p>
                 </CommandItem>
               </CommandGroup>
