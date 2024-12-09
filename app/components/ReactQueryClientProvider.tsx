@@ -9,7 +9,15 @@ export default function ReactQueryClientProvider({
 }: {
   children: ReactNode;
 }) {
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        refetchOnWindowFocus: false,
+        staleTime: 1000 * 60,
+        refetchInterval: 1000 * 60,
+      },
+    },
+  });
   return (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
