@@ -30,7 +30,7 @@ export default function GroupInfo({ token, groupId }: GroupInfoProps) {
       });
       router.replace(`/groups/${groupId}`);
     }
-  }, [inviteError, toast]);
+  }, [inviteError, toast, router, groupId]);
 
   if (isLoading) {
     return <p>Loading...</p>;

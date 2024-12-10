@@ -88,5 +88,16 @@ export type GetGroupResponse = {
   createdAt: Date;
   updatedAt: Date;
   groupMembers: GroupMember[];
-  transactions: Transaction[];
+  transactions: Partial<Transaction[]>;
+};
+
+export type getUserGroupsResponse = {
+  id: number;
+  name: string;
+  description?: string;
+  createdById: string;
+  createdBy: Partial<User>;
+  createdAt: Date;
+  updatedAt: Date;
+  groupMembers: Partial<GroupMember>[];
 };
