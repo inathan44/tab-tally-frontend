@@ -10,7 +10,7 @@ import { UpdateUserBody } from '@/types/api';
 import {
   searchUsersResponse,
   SearchUsersResponse,
-} from '../schemas/responses/searchUsers';
+} from '@/app/schemas/responses/searchUsers';
 
 const auth = getAuth(firebaseApp);
 

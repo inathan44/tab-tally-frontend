@@ -7,7 +7,7 @@ import {
   HydrationBoundary,
   QueryClient,
 } from '@tanstack/react-query';
-import { getUserGroups } from '@/app/api/groups';
+import { getUserGroupInvites, getUserGroups } from '@/app/api/groups';
 
 export default async function Groups() {
   const token = await getServerToken();
@@ -17,6 +17,11 @@ export default async function Groups() {
   await queryClient.prefetchQuery({
     queryKey: ['getUserGroups', token || ''],
     queryFn: getUserGroups,
+  });
+
+  await queryClient.prefetchQuery({
+    queryKey: ['getUserGroupInvites', token || ''],
+    queryFn: getUserGroupInvites,
   });
 
   const dehydratedState = dehydrate(queryClient);

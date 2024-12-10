@@ -1,9 +1,12 @@
-'user server';
-
 import { AxiosError } from 'axios';
 import { CreateGroupSchema, InvitedMember } from '@/app/schemas/createGroup';
-import { GetGroupResponse, Group } from '@/types/api';
-import axiosInstance from './axiosInstance';
+import {
+  GetGroupResponse,
+  getUserGroupsResponse,
+  Group,
+  GroupMemberStatus,
+} from '@/types/api';
+import axiosInstance from '@/app/api/axiosInstance';
 import { useQuery } from '@tanstack/react-query';
 
 export async function createGroup(reqBody: CreateGroupSchema, token: string) {
@@ -72,9 +75,12 @@ export async function getUserGroups({
     return [];
   }
   try {
-    const response = await axiosInstance.get<Group[]>('/Users/groups', {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await axiosInstance.get<getUserGroupsResponse[]>(
+      '/Users/groups',
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
 
     return response.data;
   } catch (error) {
@@ -123,4 +129,62 @@ export function useGetGroup(groupId: string, token: string) {
     queryKey: ['getGroup', groupId, token || ''],
     queryFn: getGroup,
   });
+}
+
+export async function getUserGroupInvites({
+  queryKey,
+}: {
+  queryKey: [string, string];
+}) {
+  const [_, token] = queryKey;
+
+  try {
+    const response = await axiosInstance.get<Group[]>('/Users/groups/invites', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('Error getting user group invites:', error);
+    if (error instanceof AxiosError && error.response) {
+      throw new Error(error.response.data.toString());
+    } else {
+      throw new Error('An unknown error occurred');
+    }
+  }
+}
+
+export function useGetUserGroupInvites(token: string) {
+  return useQuery({
+    queryKey: ['getUserGroupInvites', token || ''],
+    queryFn: getUserGroupInvites,
+  });
+}
+
+export async function changeUserGroupStatus(
+  groupId: number,
+  token: string,
+  userId: string,
+  status: GroupMemberStatus
+) {
+  try {
+    const response = await axiosInstance.put<string>(
+      `/groups/${groupId}/changestatus/${userId}`,
+      status,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return response;
+  } catch (error) {
+    console.error('Error getting user group invites:', error);
+    if (error instanceof AxiosError && error.response) {
+      throw new Error(error.response.data.toString());
+    } else {
+      throw new Error('An unknown error occurred');
+    }
+  }
 }
