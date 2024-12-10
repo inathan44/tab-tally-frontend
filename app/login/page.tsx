@@ -18,6 +18,7 @@ import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import firebaseApp from '@/firebaseConfig';
 import { loginSchema, LoginSchema } from '../schemas/login';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 const auth = getAuth(firebaseApp);
 
@@ -146,13 +147,13 @@ export default function Login() {
           </div>
           <LoginForm />
           <p className='text-center text-sm text-gray-600 mt-4'>
-            Already have an account?{' '}
-            <a
-              href='/signin'
+            Don&apos;t have an account?{' '}
+            <Link
+              href='/register'
               className='font-medium text-blue-600 hover:text-blue-500'
             >
-              Sign in
-            </a>
+              Create one
+            </Link>
           </p>
         </div>
       </div>
