@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { authMiddleware, redirectToLogin } from 'next-firebase-auth-edge';
 import { clientConfig, serverConfig } from '@/firebaseConfig';
 
-const PUBLIC_PATHS = ['/signup', '/login'];
+const PUBLIC_PATHS = ['/register', '/login', '/'];
 
 export async function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname === '/') {
+    return NextResponse.next();
+  }
+
   return authMiddleware(request, {
     loginPath: '/api/login',
     logoutPath: '/api/logout',
@@ -13,8 +17,21 @@ export async function middleware(request: NextRequest) {
     cookieSignatureKeys: serverConfig.cookieSignatureKeys,
     cookieSerializeOptions: serverConfig.cookieSerializeOptions,
     serviceAccount: serverConfig.serviceAccount,
-    handleValidToken: async (_, headers) => {
+    handleValidToken: async (token, headers) => {
       console.info('User is authenticated');
+
+      const decodedToken = token.decodedToken;
+
+      // Check if the username claim is null or missing
+      if (!decodedToken || !decodedToken.username) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/create-username';
+        // Prevent redirect loop by checking if the current path is already '/create-username'
+        if (request.nextUrl.pathname !== '/create-username') {
+          return NextResponse.redirect(url);
+        }
+      }
+
       if (PUBLIC_PATHS.includes(request.nextUrl.pathname)) {
         const url = request.nextUrl.clone();
         url.pathname = '/groups';
