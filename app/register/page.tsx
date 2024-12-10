@@ -15,7 +15,7 @@ import { useForm } from 'react-hook-form';
 import { signUpSchema, SignUpSchema } from '@/app/schemas/signup';
 import { Icons } from '@/components/ui/icons';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createUserInDbAndFirebase } from '../api/users';
+import { createUserInDbAndFirebase } from '@/app/api/users';
 import { useRouter } from 'next/navigation';
 
 export default function Signup() {
@@ -41,6 +41,18 @@ export default function Signup() {
 
     try {
       const { firebaseUser } = await createUserInDbAndFirebase(values);
+
+      await fetch('/api/setCustomClaims', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${await firebaseUser.getIdToken()}`,
+        },
+        body: JSON.stringify({
+          uid: firebaseUser.uid,
+          customClaims: { username: values.username },
+        }),
+      });
 
       const idToken = await firebaseUser.getIdToken();
 
@@ -221,10 +233,10 @@ export default function Signup() {
         <p className='text-center text-sm text-gray-600 mt-4'>
           Already have an account?{' '}
           <a
-            href='/signin'
+            href='/login'
             className='font-medium text-blue-600 hover:text-blue-500'
           >
-            Sign up
+            Sign In
           </a>
         </p>
       </div>
