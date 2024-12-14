@@ -7,6 +7,7 @@ export async function POST(req: NextRequest) {
   try {
     console.info('Setting custom claims for user:', uid);
     await admin.auth().setCustomUserClaims(uid, customClaims);
+    console.info('Custom claims set successfully');
 
     return NextResponse.json({ message: 'Custom claims set successfully' });
   } catch (error) {

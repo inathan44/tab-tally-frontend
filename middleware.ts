@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authMiddleware, redirectToLogin } from 'next-firebase-auth-edge';
+import {
+  authMiddleware,
+  redirectToLogin,
+  redirectToPath,
+} from 'next-firebase-auth-edge';
 import { clientConfig, serverConfig } from '@/firebaseConfig';
 
 const PUBLIC_PATHS = ['/register', '/login', '/'];
@@ -30,12 +34,19 @@ export async function middleware(request: NextRequest) {
         if (request.nextUrl.pathname !== '/create-username') {
           return NextResponse.redirect(url);
         }
+      } else {
+        if (request.url.includes('/create-username')) {
+          return redirectToPath(request, '/groups', {
+            shouldClearSearchParams: true,
+          });
+        }
       }
 
+      // Signed in users should not be able to access public paths such as login
       if (PUBLIC_PATHS.includes(request.nextUrl.pathname)) {
-        const url = request.nextUrl.clone();
-        url.pathname = '/groups';
-        return NextResponse.redirect(url);
+        return redirectToPath(request, '/groups', {
+          shouldClearSearchParams: true,
+        });
       }
 
       return NextResponse.next({
@@ -44,6 +55,7 @@ export async function middleware(request: NextRequest) {
         },
       });
     },
+
     handleInvalidToken: async (reason) => {
       console.info('Missing or malformed credentials', { reason });
 
