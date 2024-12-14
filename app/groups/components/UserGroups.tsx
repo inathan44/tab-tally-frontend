@@ -14,11 +14,6 @@ import { GroupMemberStatus } from '@/types/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
-// type UserGroupsProps = {
-//   initialGroups: GetUserGroupsResponse[];
-//   initialGroupInvites: GetUserGroupsResponse[];
-// };
-
 export default function UserGroups() {
   const [user] = useAuthState(auth);
   const queryClient = useQueryClient();
