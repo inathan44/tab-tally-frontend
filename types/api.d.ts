@@ -91,7 +91,7 @@ export type GetGroupResponse = {
   transactions: Partial<Transaction[]>;
 };
 
-export type getUserGroupsResponse = {
+export type GetUserGroupsResponse = {
   id: number;
   name: string;
   description?: string;
@@ -100,4 +100,16 @@ export type getUserGroupsResponse = {
   createdAt: Date;
   updatedAt: Date;
   groupMembers: Partial<GroupMember>[];
+};
+
+export type GroupMemberSummary = {
+  id: number;
+  memberId: string;
+  member: Partial<User>;
+  invitedById: string;
+  invitedBy: Partial<User>;
+  isAdmin: boolean;
+  status: GroupMemberStatus;
+  createdAt: Date;
+  updatedAt: Date;
 };
