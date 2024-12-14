@@ -31,8 +31,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Textarea } from '@/components/ui/textarea';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/firebaseConfig';
 
-export default function CreateGroupModal({ token }: { token: string }) {
+export default function CreateGroupModal() {
+  const [user] = useAuthState(auth);
+
   const queryClient = useQueryClient();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -43,17 +47,17 @@ export default function CreateGroupModal({ token }: { token: string }) {
     mutationFn: async ({
       groupId,
       invitedMembers,
-      token,
     }: {
       groupId: number;
       invitedMembers: CreateGroupSchema['invitedMembers'];
-      token: string;
     }) => {
-      return addMembers(groupId, invitedMembers || [], token);
+      const token = await user?.getIdToken();
+      return addMembers(groupId, invitedMembers || [], token || '');
     },
     onSettled: async () => {
+      const token = await user?.getIdToken();
       await queryClient.invalidateQueries({
-        queryKey: ['getUserGroups', token],
+        queryKey: ['getUserGroups', token || ''],
       });
       setIsOpen(false); // Close whether or not this fails because we know the group was created, send a notification of invite failure
     },
@@ -64,12 +68,16 @@ export default function CreateGroupModal({ token }: { token: string }) {
       router.push(`/groups/${ctx?.groupId}?inviteError=true`);
     },
     onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: ['getUserGroups', token] });
+      const token = await user?.getIdToken();
+      await queryClient.cancelQueries({
+        queryKey: ['getUserGroups', token || ''],
+      });
     },
   });
 
   const createGroupMutation = useMutation({
     mutationFn: async (values: CreateGroupSchema) => {
+      const token = await user?.getIdToken();
       return createGroup(values, token || '');
     },
     onSuccess: async (response, values) => {
@@ -79,12 +87,12 @@ export default function CreateGroupModal({ token }: { token: string }) {
       await addMembersMutation.mutateAsync({
         groupId: group.id,
         invitedMembers: values.invitedMembers || [],
-        token: token || '',
       });
     },
     onSettled: async () => {
+      const token = await user?.getIdToken();
       await queryClient.invalidateQueries({
-        queryKey: ['getUserGroups', token],
+        queryKey: ['getUserGroups', token || ''],
       });
     },
   });
@@ -128,7 +136,7 @@ export default function CreateGroupModal({ token }: { token: string }) {
                 <FormItem>
                   <FormLabel className='font-bold'>Group Name</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} autoComplete='off' />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

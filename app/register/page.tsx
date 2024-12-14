@@ -17,9 +17,14 @@ import { Icons } from '@/components/ui/icons';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createUserInDbAndFirebase } from '@/app/api/users';
 import { useRouter } from 'next/navigation';
+import GoogleButton from '../components/GoogleButton';
+import { useSignInWithGoogle } from 'react-firebase-hooks/auth';
+import { auth } from '@/firebaseConfig';
 
 export default function Signup() {
   const router = useRouter();
+
+  const [signInWithGoogle, error] = useSignInWithGoogle(auth);
 
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -42,19 +47,19 @@ export default function Signup() {
     try {
       const { firebaseUser } = await createUserInDbAndFirebase(values);
 
+      const idToken = await firebaseUser.getIdToken();
+
       await fetch('/api/setCustomClaims', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${await firebaseUser.getIdToken()}`,
+          Authorization: `Bearer ${idToken}`,
         },
         body: JSON.stringify({
           uid: firebaseUser.uid,
           customClaims: { username: values.username },
         }),
       });
-
-      const idToken = await firebaseUser.getIdToken();
 
       await fetch('/api/login', {
         headers: {
@@ -75,6 +80,22 @@ export default function Signup() {
     }
   }
 
+  async function onGoogleClick() {
+    const result = await signInWithGoogle();
+    if (result?.user) {
+      const idToken = await result.user.getIdToken();
+      await fetch('/api/login', {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      });
+      router.push('/create-username');
+      router.refresh();
+    } else {
+      console.error('Error signing in with Google:', error);
+    }
+  }
+
   return (
     <div className='min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-500 to-purple-600 p-4'>
       <div className='w-full max-w-md space-y-8 bg-white p-6 rounded-xl shadow-md'>
@@ -82,6 +103,7 @@ export default function Signup() {
           <h1 className='text-2xl font-bold'>Create your account</h1>
           <p className='text-gray-600 mt-2'>Start splitting bills with ease</p>
         </div>
+        <GoogleButton onClick={onGoogleClick} />
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
             <FormField

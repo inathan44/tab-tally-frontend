@@ -6,15 +6,48 @@ import {
 } from 'firebase/auth';
 import firebaseApp from '@/firebaseConfig';
 import axios, { AxiosError } from 'axios';
-import { UpdateUserBody } from '@/types/api';
+import { UpdateUserBody, User } from '@/types/api';
 import {
   searchUsersResponse,
   SearchUsersResponse,
 } from '@/app/schemas/responses/searchUsers';
+import axiosInstance from './axiosInstance';
+import { useQuery } from '@tanstack/react-query';
 
 const auth = getAuth(firebaseApp);
 
-async function createUserInDb(body: UpdateUserBody, token: string) {
+async function getSignedInDBUser({
+  queryKey,
+}: {
+  queryKey: [string, string, string];
+}) {
+  const [_, userId, token] = queryKey;
+  try {
+    const response = await axiosInstance.get<User>(`/Users/${userId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error getting user:', error);
+    if (error instanceof AxiosError && error.response) {
+      throw new Error(error.response.data.toString());
+    } else {
+      throw new Error('An unknown error occurred');
+    }
+  }
+}
+
+export function useGetSignedInDBUser(token: string, userId: string) {
+  return useQuery({
+    queryKey: ['getSignedInDBUser', userId, token || ''],
+    queryFn: getSignedInDBUser,
+  });
+}
+
+export async function createUserInDb(body: UpdateUserBody, token: string) {
   return await axios.post('http://localhost:5217/api/v1/Users/create', body, {
     headers: {
       'Content-Type': 'application/json',

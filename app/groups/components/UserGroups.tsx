@@ -6,7 +6,7 @@ import {
   useGetUserGroups,
 } from '@/app/api/groups';
 import { Button } from '@/components/ui/button';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/firebaseConfig';
@@ -14,17 +14,29 @@ import { GroupMemberStatus } from '@/types/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
-type UserGroupsProps = {
-  token: string;
-};
+// type UserGroupsProps = {
+//   initialGroups: GetUserGroupsResponse[];
+//   initialGroupInvites: GetUserGroupsResponse[];
+// };
 
-export default function UserGroups({ token }: UserGroupsProps) {
+export default function UserGroups() {
   const [user] = useAuthState(auth);
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  const { data: groups } = useGetUserGroups(token);
-  const { data: groupInvites } = useGetUserGroupInvites(token);
+  const { data: token } = useQuery({
+    queryKey: ['clientToken'],
+    queryFn: async () => {
+      if (user) {
+        return await user.getIdToken();
+      }
+      return null;
+    },
+    enabled: !!user, // Only run the query if the user is authenticated
+  });
+
+  const { data: groups } = useGetUserGroups(token || '');
+  const { data: groupInvites } = useGetUserGroupInvites(token || '');
 
   const { mutate, isPending } = useMutation({
     mutationFn: async ({
@@ -88,7 +100,7 @@ export default function UserGroups({ token }: UserGroupsProps) {
                   mutate({
                     groupId: invitedGroup.id,
                     status: 'Joined',
-                    token: token,
+                    token: token || '',
                     userId: user?.uid || '',
                   })
                 }
