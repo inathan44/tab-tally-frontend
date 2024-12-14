@@ -5,18 +5,25 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import { useClientToken } from '@/app/hooks/useClientToken';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/firebaseConfig';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type GroupInfoProps = {
-  token: string;
   groupId: string;
 };
 
-export default function GroupInfo({ token, groupId }: GroupInfoProps) {
+export default function GroupInfo({ groupId }: GroupInfoProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [user, userLoading] = useAuthState(auth);
+
   const { toast } = useToast();
 
-  const { data, isLoading } = useGetGroup(groupId, token);
+  const { data: token, isLoading: tokenLoading } = useClientToken(user);
+
+  const { data, isLoading: groupLoading } = useGetGroup(groupId, token || '');
 
   const inviteError = searchParams.get('inviteError');
 
@@ -32,8 +39,13 @@ export default function GroupInfo({ token, groupId }: GroupInfoProps) {
     }
   }, [inviteError, toast, router, groupId]);
 
-  if (isLoading) {
-    return <p>Loading...</p>;
+  if (tokenLoading || groupLoading || userLoading) {
+    return (
+      <div>
+        <Skeleton className='w-full h-4' />
+        <p>loading...</p>
+      </div>
+    );
   }
 
   return (
@@ -42,6 +54,7 @@ export default function GroupInfo({ token, groupId }: GroupInfoProps) {
       <p>{data?.name}</p>
       <p>{data?.description}</p>
       <p>Members: {data?.groupMembers?.length || null}</p>
+      <p>Number of transactions: {data?.transactions.length}</p>
     </div>
   );
 }
