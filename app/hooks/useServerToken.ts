@@ -14,6 +14,7 @@ export const verifyToken = async (): Promise<boolean> => {
 
     // Verify the token's signature
     jwt.verify(token, SECRET_KEY);
+
     return true;
   } catch (error) {
     console.error('Error verifying token:', error);

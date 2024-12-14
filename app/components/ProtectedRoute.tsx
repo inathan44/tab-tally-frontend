@@ -1,4 +1,4 @@
-import { verifyToken } from '@/app/hooks/getToken';
+import { verifyToken } from '@/app/hooks/useServerToken';
 
 export default async function ProtectedRoute({
   children,
